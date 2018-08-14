@@ -36,7 +36,7 @@ sp.diskColor = [255,125,125];
 sp.COLOR_GRAY = 127;
 sp.COLOR_BLACK = 0;
 sp.COLOR_WHITE = 254;
-sp.ITI = 3; % 3 secs
+sp.ITI = 1.5; % 3 secs
 sp.feedbackTime = 1;
 
 % Do some calculation
@@ -73,14 +73,16 @@ mfi = Screen('GetFlipInterval',win);  % re-use what was found upon initializatio
 % Text position
 sp.cumMoneyTxtPos = [winRect(3)-300 , 50];
 sp.centerMoneyPos = [winRect(3)/2-25, winRect(4)/2-15];
-sp.instrTxtPosBurst = [winRect(3)/2-50, winRect(4)/2+50];
-sp.instrTxtPosStop = [winRect(3)/2-70, winRect(4)/2+50];
+sp.instrTxtPosBurst = [winRect(3)/2-110, winRect(4)/2-15];
+sp.instrTxtPosStop = [winRect(3)/2-90, winRect(4)/2-15];
 sp.instrTxtPosMax = [winRect(3)/2-80, winRect(4)/2];
 
 %% wait for a key press to start, start to show stimulus
-Screen('FillRect',win,sp.COLOR_BLACK,winRect);
 Screen('TextSize',win,30);Screen('TextFont',win,'Arial');
-Screen('DrawText', win, 'Ballon analog risk task, Press UpArrow to increase \n.Press 5 to start experiment...',winRect(3)/2-250, winRect(4)/2-50, 127);
+welcomeText = '<color=.5,.5,.5>Balloon Analogue Risk Task\nPress "5" to start experiment. \n Press "+" to increase reward. \n Press "Enter" to stop and accept the offer';
+Screen('FillRect',win,sp.COLOR_BLACK,winRect);
+DrawFormattedText2(welcomeText,'win',win,'sx','center','sy','center','xalign','center','yalign','center','xlayout','center');
+%Screen('DrawText', win, 'Press UpArrow to increase reward \n.Press 5 to start experiment...',winRect(3)/2-250, winRect(4)/2-50, 127);
 Screen('Flip',win);
 fprintf('press a key to begin the movie. (make sure to turn off network, energy saver, spotlight, software updates! mirror mode on!)\n');
 safemode = 0;
@@ -118,7 +120,7 @@ for iTrial = 1:sp.nTrials
            fprintf('Exceeds maximum size. Turn to next trial!');
            Screen('DrawText', win, sprintf('Total won: $%d', sp.cumMoney),sp.cumMoneyTxtPos(1), sp.cumMoneyTxtPos(2), 127);
            Screen('FillOval', win,sp.diskColor, diskRect);
-           Screen('DrawText', win, sprintf('Reach maximum, get %d',rewardNow), sp.instrTxtPosMax(1), sp.instrTxtPosMax(2), 255);
+           DrawFormattedText2(sprintf('<color=1.,1.,1.>Reach maximum, get %d',rewardNow),'win',win,'sx','center','sy','center','xalign','center','yalign','center','xlayout','center');
            [VBLTimestamp,~,~,Missed,~] = Screen('Flip',win, when);
            WaitSecs(sp.feedbackTime);
            break;
@@ -131,7 +133,7 @@ for iTrial = 1:sp.nTrials
         % draw the disk
         Screen('DrawText', win, sprintf('Total won: $%d', sp.cumMoney),sp.cumMoneyTxtPos(1), sp.cumMoneyTxtPos(2), 127);
         Screen('FillOval', win,sp.diskColor, diskRect);
-        Screen('DrawText', win, sprintf('$%d',rewardNow),sp.centerMoneyPos(1), sp.centerMoneyPos(2), 255);
+        DrawFormattedText2(sprintf('<color=1.,1.,1.>$%02d',rewardNow),'win',win,'sx','center','sy','center','xalign','center','yalign','center','xlayout','center');
         [VBLTimestamp,~,~,Missed,~] = Screen('Flip',win); % should sent the trigger here!
         
         
@@ -159,15 +161,14 @@ for iTrial = 1:sp.nTrials
         if burst % burst
             rewardNow = 0;
             Screen('DrawText', win, sprintf('Total won: $%d', sp.cumMoney),sp.cumMoneyTxtPos(1), sp.cumMoneyTxtPos(2), 127);
-            Screen('DrawText', win, '$0',winRect(3)/2-20, winRect(4)/2, 255);
-            Screen('DrawText', win, 'Burst, fail',sp.instrTxtPosBurst(1), sp.instrTxtPosBurst(2), 127);
+            DrawFormattedText2('Burst, fail, $0','win',win,'sx','center','sy','center','xalign','center','yalign','center','xlayout','center');
             [VBLTimestamp,~,~,Missed,~] = Screen('Flip',win); 
             WaitSecs(sp.feedbackTime);
         else % no burst, continue
             if isequal(kn,'Return') % stop
                 fprintf('Subject chose to stop here. \n');
                 Screen('DrawText', win, sprintf('Total won: $%d', sp.cumMoney),sp.cumMoneyTxtPos(1), sp.cumMoneyTxtPos(2), 127);
-                Screen('DrawText', win, sprintf('Stop, won: $%d', sp.cumMoney),sp.centerMoneyPos(1), sp.centerMoneyPos(2), 127);
+                DrawFormattedText2(sprintf('Stop, won: $%d', rewardNow),'win',win,'sx','center','sy','center','xalign','center','yalign','center','xlayout','center');
                 [VBLTimestamp,~,~,Missed,~] = Screen('Flip',win); 
                 WaitSecs(sp.feedbackTime);
                 stop=1;
