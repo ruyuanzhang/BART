@@ -261,6 +261,7 @@ try
     rmpath(genpath('./utils'));  % remove the utils path
     c = fix(clock);
     filename=sprintf('%d%02d%02d%02d%02d%02d_exp%s_subj%02d_run%02d',c(1),c(2),c(3),c(4),c(5),c(6),sp.expName,sp.subj,sp.runNo);
+    clear sp.balloons sp.popBalloons
     save(filename); % save everything to the file;
     
     
