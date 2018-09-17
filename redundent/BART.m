@@ -6,19 +6,31 @@
 %% 
 clear all; close all; clc;
 
-sp.subj = 95;  % 99,97,RZ; 98, TZ; 96, Roberto;95,
+sp.subj = 99;  %
 sp.runNo = 3;  % 
+sp.place = 'laptop';
 
 addpath(genpath('./utils'));
-
 %% debug purpose
-sp.wantFrameFiles = 0; % 1, save all pictures;0, do not save
 sp.blank = 4;  % secs, blanck at the begining and the end
-%mp = getmonitorparams('uminn7tpsboldscreen');
-%mp = getmonitorparams('uminnofficedesk');
-mp = getmonitorparams('uminnmacpro');
-sp.respKeys = {'upArrow','Enter'};
+switch sp.place
+    case 'laptop'
+        mp = getmonitorparams('uminnmacpro');
+        sp.deviceNum = 1; % devicenumber to record input
+        sp.allowedKeys = zeros(1, 256);
+        sp.allowedKeys([20 41 40 46]) = 1;  %20,'q'; 41,'ESCAPE';40,'Return';, 46, "=+"
+    case 'psphlab'
+        mp = getmonitorparams('cmrrpsphlab');
+        sp.deviceNum = GetKeyboardIndices; % devicenumber to record input
+        sp.deviceNum = sp.deviceNum(1); % devicenumber to record input
+        sp.allowedKeys = zeros(1, 256);
+        sp.allowedKeys([20 41 40 46]) = 1;  %20,'q'; 41,'ESCAPE';40,'Return';, 46, "=+"
+    case 'hospital'
+        mp = getmonitorparams('uminnintracranialpatient');
+end
 
+sp.wantFrameFiles = 0; % 1, save all pictures;0, do not save
+sp.respKeys = {'=+','Enter'};
 %% monitor parameter (mp)
 %mp = getmonitorparams('uminn7tpsboldscreen');
 mp.monitorRect = [0 0 mp.resolution(1) mp.resolution(2)];
@@ -36,7 +48,7 @@ sp.result = zeros(1,sp.nTrials); %0,reach maximum steps;1, burst;2,stop
 %sp.diskColorSteps{1} = 255*hsv2rgb([ones(1,sp.nSteps(1)+1);linspace(0,1,sp.nSteps(1)+1);0.5*linspace(1,1,sp.nSteps(1)+1)]');
 %sp.diskColorSteps{2} = 255*hsv2rgb([linspace(0.66667,0.66667,sp.nSteps(2)+1);linspace(0,1,sp.nSteps(2)+1);0.5*linspace(1,1,sp.nSteps(2)+1)]');
 sp.diskColorSteps{1} = [255,50,50];
-sp.diskColorSteps{2} = [50,50,255];
+sp.diskColorSteps{2} = [0,0,255];
 sp.COLOR_GRAY = 127;
 sp.COLOR_BLACK = 0;
 sp.COLOR_WHITE = 254;
@@ -59,16 +71,13 @@ sp.pBurstFunc = @(x,i) 1/sp.nSteps(i); % x is steps, i indicate which disk
 sp.timeKeys = {};
 sp.triggerKey = '5'; % the key to start the experiment
 sp.timeFrames=[];
-sp.allowedKeys = zeros(1, 256);
-sp.allowedKeys([20 41 40 46]) = 1;  %20,'q'; 40,'Return';41,'ESCAPE';46 =+
 sp.updateOrNot = zeros(1, sp.nTrials);  % a marker to show that already update money in this trial, more button press will not update again
 getOutEarly = 0;
 when = 0;
 glitchcnt = 0;
-sp.deviceNum = 1; % devicenumber to record input
 frameCnt = 0;
 %kbQueuecheck setup
-KbQueueCreate(1,sp.allowedKeys);
+KbQueueCreate(sp.deviceNum,sp.allowedKeys);
 
 % get information about the PT setup
 oldclut = pton([],[],[],1);
@@ -123,7 +132,6 @@ for iTrial = 1:sp.nTrials
     stop=0;
     diskRadiusPix = 0;
     while 1
-        steps
         if diskRadiusPix >= maxRadiusPix % subject get the reward and transition to the next trial
            Screen('DrawText', win, sprintf('Total won: $%d', sp.cumMoney),sp.cumMoneyTxtPos(1), sp.cumMoneyTxtPos(2), 127);
            Screen('DrawText', win, sprintf('Trial: %d', iTrial), sp.trialTxtPos(1), sp.trialTxtPos(2), 127);
@@ -185,7 +193,7 @@ for iTrial = 1:sp.nTrials
                 [VBLTimestamp,~,~,Missed,~] = Screen('Flip',win); 
                 WaitSecs(sp.feedbackTime);
                 stop=1;
-            elseif strcmp(kn,'=+') % increase the stop
+            elseif strcmp(kn,sp.respKeys{1}) % increase the stop
                 steps = steps+1;
             end
         end
@@ -203,6 +211,7 @@ for iTrial = 1:sp.nTrials
     if burst
         sp.result(iTrial)=1; %burst
     end
+    sp.result(iTrial)
     sp.cumMoney = sp.cumMoney + rewardNow;
     PsychHID('KbQueueFlush',sp.deviceNum, 1);
     %% inter-trial interval
