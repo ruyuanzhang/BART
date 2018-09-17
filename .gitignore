@@ -2,3 +2,5 @@
 .DS_Store
 *_error.mat
 BARTError.mat
+data
+redundant
